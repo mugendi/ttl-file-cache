@@ -26,6 +26,8 @@ class Cache {
 				? path.resolve(opts.dir)
 				: path.join(os.tmpdir(), 'ttl-file-cache');
 
+		this.ttl = opts.ttl && typeof opts.ttl == 'number' ? opts.ttl : 0;
+
 		this.expiryStatus = {};
 
 		//ensure dir
@@ -164,6 +166,7 @@ class Cache {
 
 		// check that file has not expired
 		if (jsonBuff.expires == 0 || jsonBuff.expires > now) {
+
 			let buf = Buffer.from(jsonBuff);
 
 			buf.dataType = jsonBuff.dataType;
@@ -219,6 +222,9 @@ class Cache {
 		if (typeof ttl !== 'number')
 			throw new Error('ttl argument must be a number');
 
+        // default to this.ttl
+        ttl = ttl || this.ttl || 0;
+
 		let filePath = this.#get_filePath(key);
 		let dataBuff, typeOf;
 
@@ -267,7 +273,7 @@ class Cache {
 		let now = Math.floor(Date.now() / 1000);
 
 		// use new ttl or use the original ttl used to save file
-		ttl = ttl || jsonBuff.ttl;
+		ttl = ttl || jsonBuff.ttl || this.ttl || 0;
 
 		// if ttl is zero, then file lives forever, stop here
 		if (ttl == 0) return null;

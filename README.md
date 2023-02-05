@@ -33,6 +33,14 @@ The `get(key)` method returns a buffer with the following properties added:
 
 ## API
 
+### **`new Cache({dir,ttl})`**
+Creates a new instance of the cache. 
+
+**`dir`** sets the directory to be used for saving cache files. Defaults to `/tmp/ttl-file-cache`. Where `/tmp/` directory is based on [os.tmpdir()](https://nodejs.org/api/os.html#ostmpdir)
+
+**`ttl`** sets the default cache time to live used by `set()` and `touch()` methods. Default is zero (0) or no expiry.
+
+
 ### **`set(key, data, [ttl])`**
 Saves a cache key by writing the data into disk.
 
