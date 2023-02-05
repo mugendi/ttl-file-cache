@@ -62,3 +62,7 @@ Alias of `clear()`.
 
 ### **`touch(key, [ttl])`**
 This method **"touches a cache item"** and thereby extends its expiry. If no `ttl` is entered, then the expiry is extended by the original ttl entered while caching the item via the `set()` method.
+
+**NOTE:** One difference between doing `touch("myKey", 30)` and `get("myKey",true)` is that `touch()` will update the `'myKey'` `ttl` to 30 seconds irrespective. 
+
+However, `get()` with `touchFile` argument set to true will only update `ttl` to the original value whenever the item nears or has expired.

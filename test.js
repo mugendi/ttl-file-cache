@@ -19,7 +19,7 @@ let key = 'package.js';
 // cache file for 30 seconds
 cache.set(key, fs.readFileSync(file), 30);
 
-cache.touch(key, 36789);
+// cache.touch(key, 39);
 
 let buf = cache.get(key);
 console.log(buf )
