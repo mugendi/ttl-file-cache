@@ -278,6 +278,7 @@ class Cache {
 		if (expiresAfter < ttl) {
 			// add expires by the number of ttl seconds
 			jsonBuff.expires = now + ttl;
+			jsonBuff.ttl = ttl;
 
 			// re-save file
 			fs.writeFileSync(filePath, JSON.stringify(jsonBuff));
