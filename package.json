@@ -1,0 +1,28 @@
+{
+  "name": "ttl-file-cache",
+  "version": "1.0.0",
+  "description": "A cache module that writes cached items into disk and manages automatic pruning of expired items.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "cache",
+    "file",
+    "disk",
+    "ttl",
+    "expiry",
+    "time-to-live"
+  ],
+  "author": "Anthony Mugendi <ngurumugz@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mugendi/ttl-file-cache.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mugendi/ttl-file-cache/issues"
+  },
+  "homepage": "https://github.com/mugendi/ttl-file-cache#readme"
+}
