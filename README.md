@@ -22,7 +22,7 @@ console.log(buf); // you can use buf.toString() to view the file content as a st
 This will log:
 
 ```text
-<Buffer 7b 0a 09 22 6e 61 6d 65 22 3a 20 22 74 74 6c 2d 66 69 6c 65 2d 63 61 63 68 65 22 2c 0a 09 22 76 65 72 73 69 6f 6e 22 3a 20 22 31 2e 30 2e 30 22 2c 0a ... 188 more bytes, dataType: 'buffer', key: 'package.js', ttl: 30, expires: 1675600657>
+<Buffer 7b 0a 09 22 6e 61 6d 65 22 3a 20 ... 188 more bytes, dataType: 'buffer', key: 'package.js', ttl: 30, expires: 1675600657>
 ```
 
 The `get(key)` method returns a buffer with the following properties added:

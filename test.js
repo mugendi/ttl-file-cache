@@ -22,7 +22,7 @@ cache.set(key, fs.readFileSync(file), 30);
 cache.touch(key, 36789);
 
 let buf = cache.get(key);
-console.log(buf && buf.toString())
+console.log(buf )
 
 
 // cache string for 
