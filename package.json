@@ -1,6 +1,6 @@
 {
   "name": "ttl-file-cache",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A cache module that writes cached items into disk and manages automatic pruning of expired items.",
   "main": "index.js",
   "scripts": {
@@ -24,5 +24,8 @@
   "bugs": {
     "url": "https://github.com/mugendi/ttl-file-cache/issues"
   },
-  "homepage": "https://github.com/mugendi/ttl-file-cache#readme"
+  "homepage": "https://github.com/mugendi/ttl-file-cache#readme",
+  "dependencies": {
+    "seedrandom": "^3.0.5"
+  }
 }

@@ -9,7 +9,7 @@
 const path = require('path');
 const fs = require('fs');
 const Cache = require('.');
-const cache = new Cache({dir:path.join(__dirname,'cache')});
+const cache = new Cache({ dir: path.join(__dirname, 'cache') });
 
 let file = path.join(__dirname, './package.json');
 // file = '/home/mugz/Videos/zoom_0.m4v'
@@ -22,23 +22,22 @@ cache.set(key, fs.readFileSync(file), 30);
 // cache.touch(key, 39);
 
 let buf = cache.get(key);
-console.log(buf )
+console.log(buf);
 
-
-// cache string for 
-cache.set(key+'2', 7)
-cache.set('key', '354', 30)
+// cache string for
+cache.set(key + '2', 7);
+cache.set('key', '354', 30);
 
 // cache.clear();
 // cache.remove(key);
-cache.getAll()
-    .then((resp)=>{
-        console.log(resp)
-    })
-    .catch(console.error)
+cache
+	.getAll()
+	.then((resp) => {
+		console.log(resp);
+	})
+	.catch(console.error);
 
-
-// 
+//
 // let buf = cache.get(key);
 
 // console.log(buf)

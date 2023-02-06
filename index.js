@@ -8,6 +8,8 @@
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
+let Chooser = require('./lib/chooser');
+let chooser = new Chooser();
 const { encode, decode, getFiles } = require('./lib/utils');
 
 class Cache {
@@ -28,6 +30,11 @@ class Cache {
 				: path.join(os.tmpdir(), 'ttl-file-cache');
 
 		this.ttl = opts.ttl && typeof opts.ttl == 'number' ? opts.ttl : 0;
+
+		this.folderNum =
+			opts.folderNum && typeof opts.folderNum == 'number'
+				? opts.folderNum
+				: 100;
 
 		this.expiryStatus = {};
 
@@ -82,7 +89,7 @@ class Cache {
 		let hash = this.#hash(key);
 		// make folder based on length of hash
 		// this should avoid having too many files in one directory which would cause performance issues
-		let dirHash = this.#hash(Math.round(hash.length / 10) * 10);
+		let dirHash = this.#seed_select(hash);
 		let dir = path.join(this.dir, dirHash);
 
 		// console.log({ hashLen: hash.length, dir, dirHash });
@@ -170,6 +177,20 @@ class Cache {
 				return key;
 			})
 			.filter((key) => key && key.length > 0);
+	}
+
+	#seed_select(seed) {
+		
+		this.seedArr =
+			this.seedArr ||
+			new Array(this.folderNum)
+				.fill(0)
+				.map((j, i) => i)
+				.map(encode);
+
+		let idx = chooser.chooseWeightedIndex(this.seedArr, seed);
+
+		return this.seedArr[idx];
 	}
 
 	get(key, touchFile = false, updateStatus = false) {
