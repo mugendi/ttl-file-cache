@@ -54,6 +54,8 @@ Fetches a cached item. Returns `null` if that key does not exist or item has exp
 ### **`getAll()`**
 Gets and returns an array of all items cached. This method could be very expensive where the items are numerous so you should use it carefully and probably within an async block.
 
+**NOTE**: This method is asynchronous.
+
 `touchFile` allows you to simultaneously **"touch a cache item"** thereby increasing its **ttl** while accessing it. This argument is great when you intend to keep files in cache while they are still being accessed. Note that the ttl (time to live) is extended by the same value that was entered while caching the file/key.
 
 ### **`del(key)`**
@@ -64,6 +66,8 @@ Alias of `del(key)`.
 
 ### **`clear()`**
 Deletes all cache items.
+
+**NOTE**: This method is asynchronous.
 
 ### **`removeAll()`**
 Alias of `clear()`.
