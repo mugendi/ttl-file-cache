@@ -8,6 +8,7 @@
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
+const { encode, decode, getFiles } = require('./lib/utils');
 
 class Cache {
 	constructor(opts) {
@@ -48,7 +49,8 @@ class Cache {
 		try {
 			if (!base64data) return null;
 
-			let buff = new Buffer.from(base64data, 'base64');
+			let buff = decode(base64data);
+
 			let jsonString = buff.toString('ascii');
 
 			if (!jsonString) return null;
@@ -63,7 +65,8 @@ class Cache {
 
 	#hash(input) {
 		let buff = new Buffer.from(JSON.stringify(input));
-		let base64data = buff.toString('base64');
+
+		let base64data = encode(buff);
 
 		return base64data;
 	}
@@ -77,7 +80,21 @@ class Cache {
 
 	#get_filePath(key) {
 		let hash = this.#hash(key);
-		return path.join(this.dir, hash + '.json');
+		// make folder based on length of hash
+		// this should avoid having too many files in one directory which would cause performance issues
+		let dirHash = this.#hash(Math.round(hash.length / 10) * 10);
+		let dir = path.join(this.dir, dirHash);
+
+		// console.log({ hashLen: hash.length, dir, dirHash });
+		return path.join(dir, hash + '.json');
+	}
+
+	#write_file(filePath, data) {
+		let dir = path.dirname(filePath);
+		// ensure dir
+		fs.existsSync(dir) || fs.mkdirSync(dir, { recursive: true });
+
+		fs.writeFileSync(filePath, data);
 	}
 
 	async #watch_expiry(jsonBuff = null) {
@@ -101,6 +118,8 @@ class Cache {
 
 			// console.log(new Date('2023-02-05T12:38:42.736Z'));
 
+			// console.log(this.expiryStatus);
+
 			let now = this.#round_to_hr();
 			// now = this.#round_to_hr(new Date(), 1);
 
@@ -122,10 +141,9 @@ class Cache {
 		date = new Date(date);
 
 		date.setHours(date.getHours() + skip);
-		date.setMinutes(0, 0, 0); // Resets also seconds and milliseconds
-
+		// date.setMinutes(0, 0, 0); // Resets also seconds and milliseconds
 		// console.log('d2', date);
-		return date.toISOString();
+		return date.toISOString().split(':').shift();
 	}
 
 	#remove_from_expiry_status(jsonBuff) {
@@ -140,6 +158,18 @@ class Cache {
 				this.expiryStatus[jsonBuff.timeKey].splice(index, 1);
 			}
 		}
+	}
+
+	async #get_all_keys() {
+		let files = await getFiles(this.dir);
+		// get all files in dir
+		return files
+			.map((f) => {
+				let hash = path.basename(f).replace(/\.json$/, '');
+				let key = this.#from_hash(hash);
+				return key;
+			})
+			.filter((key) => key && key.length > 0);
 	}
 
 	get(key, touchFile = false, updateStatus = false) {
@@ -166,7 +196,6 @@ class Cache {
 
 		// check that file has not expired
 		if (jsonBuff.expires == 0 || jsonBuff.expires > now) {
-
 			let buf = Buffer.from(jsonBuff);
 
 			buf.dataType = jsonBuff.dataType;
@@ -194,23 +223,6 @@ class Cache {
 		return null;
 	}
 
-	getAll(updateStatus = false) {
-		let keys = fs
-			.readdirSync(this.dir)
-			.map((f) => {
-				let hash = f.replace(/\.json$/, '');
-				let key = this.#from_hash(hash);
-				return key;
-			})
-			.filter((key) => key && key.length > 0);
-
-		return keys
-			.map((key) => {
-				return this.get(key, false, updateStatus);
-			})
-			.filter((buf) => Buffer.isBuffer(buf));
-	}
-
 	set(key, data, ttl = 0) {
 		// validate inputs
 		if (typeof key !== 'string')
@@ -222,8 +234,8 @@ class Cache {
 		if (typeof ttl !== 'number')
 			throw new Error('ttl argument must be a number');
 
-        // default to this.ttl
-        ttl = ttl || this.ttl || 0;
+		// default to this.ttl
+		ttl = ttl || this.ttl || 0;
 
 		let filePath = this.#get_filePath(key);
 		let dataBuff, typeOf;
@@ -251,7 +263,7 @@ class Cache {
 		this.#watch_expiry(jsonBuff).catch(console.error);
 
 		// save file
-		fs.writeFileSync(filePath, JSON.stringify(jsonBuff));
+		this.#write_file(filePath, JSON.stringify(jsonBuff));
 	}
 
 	touch(key, ttl = 0) {
@@ -287,7 +299,7 @@ class Cache {
 			jsonBuff.ttl = ttl;
 
 			// re-save file
-			fs.writeFileSync(filePath, JSON.stringify(jsonBuff));
+			this.#write_file(filePath, JSON.stringify(jsonBuff));
 
 			// remove this key from expiry key from status object
 			// a new key will be created by #watch_expiry and placed wherever the touch() event resolves to
@@ -301,20 +313,6 @@ class Cache {
 		}
 
 		return { expiresAfter, expiresAt: jsonBuff.expires };
-	}
-
-	clear() {
-		// get all files in dir
-		fs.readdirSync(this.dir)
-			.map((f) => {
-				let hash = f.replace(/\.json$/, '');
-				let key = this.#from_hash(hash);
-				return key;
-			})
-			.filter((key) => key && key.length > 0)
-			.map((key) => {
-				this.del(key);
-			});
 	}
 
 	del(key) {
@@ -335,6 +333,26 @@ class Cache {
 
 		// delete file
 		fs.existsSync(filePath) && fs.unlinkSync(filePath);
+	}
+
+	async getAll(updateStatus = false) {
+		let keys = await this.#get_all_keys();
+
+		return keys
+			.map((key) => {
+				return this.get(key, false, updateStatus);
+			})
+			.filter((buf) => Buffer.isBuffer(buf));
+	}
+
+	async clear() {
+		// get all keys....
+		let keys = await this.#get_all_keys();
+
+		// get all files in dir
+		keys.forEach((key) => {
+			this.del(key);
+		});
 	}
 }
 

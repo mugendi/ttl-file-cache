@@ -31,8 +31,12 @@ cache.set('key', '354', 30)
 
 // cache.clear();
 // cache.remove(key);
-let buffs = cache.getAll();
-console.log(buffs);
+cache.getAll()
+    .then((resp)=>{
+        console.log(resp)
+    })
+    .catch(console.error)
+
 
 // 
 // let buf = cache.get(key);
