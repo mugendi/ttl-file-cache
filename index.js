@@ -18,8 +18,11 @@ class Cache {
 			throw Error(`Opts argument must be an object`);
 		}
 
+		let self = this;
+
 		// some aliases to be compatible with other cache APIs
-		this.put = this.get;
+		this.fetch = this.get;
+		this.put = this.set;
 		this.remove = this.del;
 		this.removeAll = this.clear;
 
@@ -180,7 +183,6 @@ class Cache {
 	}
 
 	#seed_select(seed) {
-		
 		this.seedArr =
 			this.seedArr ||
 			new Array(this.folderNum)
@@ -193,6 +195,24 @@ class Cache {
 		return this.seedArr[idx];
 	}
 
+	#parse(resp) {
+		// json parse if object
+		if (resp?.dataType == 'object') {
+			resp = JSON.parse(resp.toString());
+		} else if (resp?.dataType == 'number') {
+			resp = Number(resp.toString());
+		} else if (resp?.dataType == 'boolean') {
+			resp = Boolean(resp.toString());
+		} else if (resp?.dataType == 'string') {
+			resp = resp.toString();
+		}else if (resp?.dataType == 'buffer') {
+			resp = Buffer.from(resp);
+		}
+
+		return resp;
+	}
+
+	
 	get(key, touchFile = false, updateStatus = false) {
 		if (typeof key !== 'string')
 			throw new Error('key argument must be a string');
@@ -223,6 +243,7 @@ class Cache {
 			buf.key = jsonBuff.key;
 			buf.ttl = jsonBuff.ttl;
 			buf.expires = jsonBuff.expires;
+			buf.parse = this.#parse.bind(this, buf);
 
 			//if we are asked to touch file
 			// then we should extend expires by ttl
@@ -274,6 +295,7 @@ class Cache {
 
 		// convert buffer to JSON
 		let jsonBuff = dataBuff.toJSON();
+
 		// add Expires value
 		jsonBuff.expires = this.#expires(ttl);
 		jsonBuff.ttl = ttl;
